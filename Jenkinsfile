@@ -2,17 +2,19 @@ pipeline {
     agent any
 
     environment {
-        // Jenkins credentials ID containing Docker Hub username + password
+        // Jenkins credentials ID that stores Docker Hub username/password
         DOCKERHUB = credentials('dockerhub-login')
 
-        // Static username for image names
+        // Docker Hub username
         DOCKERHUB_USERNAME = "chilukurir"
 
+        // Docker image names
         BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/mean-backend:latest"
         FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/mean-frontend:latest"
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/Rajesh-210/crud-dd-task-mean-app.git'
@@ -22,8 +24,8 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 sh '''
-                  cd backend
-                  docker build -t ${BACKEND_IMAGE} .
+                    cd backend
+                    docker build -t ${BACKEND_IMAGE} .
                 '''
             }
         }
@@ -31,28 +33,40 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 sh '''
-                  cd frontend
-                  docker build -t ${FRONTEND_IMAGE} .
+                    cd frontend
+                    docker build -t ${FRONTEND_IMAGE} .
                 '''
             }
         }
 
-        stage('Push Images to Docker Hub') {
+        stage('Login to Docker Hub & Push Images') {
             steps {
                 sh '''
-                  echo "${DOCKERHUB_PSW}" | docker login -u "${DOCKERHUB_USR}" --password-stdin
-                  docker push ${BACKEND_IMAGE}
-                  docker push ${FRONTEND_IMAGE}
+                    echo "${DOCKERHUB_PSW}" | docker login -u "${DOCKERHUB_USR}" --password-stdin
+                    docker push ${BACKEND_IMAGE}
+                    docker push ${FRONTEND_IMAGE}
                 '''
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Deploy using Docker Compose') {
             steps {
                 sh '''
-                  # Use the docker-compose.yml in Jenkins workspace
-                  docker compose pull
-                  docker compose up -d
+                    echo "🔥 Stopping old containers to avoid conflicts..."
+                    
+                    # Navigate to Jenkins workspace where compose file is located
+                    cd /var/lib/jenkins/workspace/mean-app-cicd
+                    
+                    # Stop & remove old containers
+                    docker compose down --remove-orphans
+
+                    echo "📥 Pulling latest images from Docker Hub..."
+                    docker compose pull
+
+                    echo "🚀 Starting new containers..."
+                    docker compose up -d --force-recreate
+
+                    echo "🎉 Deployment completed successfully!"
                 '''
             }
         }
@@ -60,10 +74,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment Successful!"
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo "❌ Deployment Failed!"
+            echo "❌ Pipeline failed! Check the logs."
         }
     }
 }
