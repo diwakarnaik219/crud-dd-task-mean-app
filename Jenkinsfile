@@ -2,13 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // Jenkins credentials ID that stores Docker Hub username/password
         DOCKERHUB = credentials('dockerhub-login')
-
-        // Docker Hub username
         DOCKERHUB_USERNAME = "karmanghat"
 
-        // Docker image names
         BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/mean-backend:latest"
         FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/mean-frontend:latest"
     }
@@ -52,21 +48,20 @@ pipeline {
         stage('Deploy using Docker Compose') {
             steps {
                 sh '''
-                    echo "🔥 Stopping old containers to avoid conflicts..."
+                    echo "🔥 Stopping old containers..."
                     
-                    # Navigate to Jenkins workspace where compose file is located
-                    cd /var/lib/jenkins/workspace/mean-app-cicd
+                    # Change this to your folder where docker-compose.yml exists
+                    cd /var/lib/jenkins/workspace/naik  
                     
-                    # Stop & remove old containers
-                    docker compose down --remove-orphans
+                    docker compose down --remove-orphans || true
 
-                    echo "📥 Pulling latest images from Docker Hub..."
+                    echo "📥 Pulling latest images..."
                     docker compose pull
 
-                    echo "🚀 Starting new containers..."
+                    echo "🚀 Starting updated containers..."
                     docker compose up -d --force-recreate
 
-                    echo "🎉 Deployment completed successfully!"
+                    echo "🎉 Deployment successful!"
                 '''
             }
         }
@@ -74,7 +69,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline completed successfully!"
+            echo "✅ Pipeline finished successfully!"
         }
         failure {
             echo "❌ Pipeline failed! Check the logs."
