@@ -6,7 +6,7 @@ pipeline {
         DOCKERHUB = credentials('dockerhub-login')
 
         // Docker Hub username
-        DOCKERHUB_USERNAME = "chilukurir"
+        DOCKERHUB_USERNAME = "karmanghat"
 
         // Docker image names
         BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/mean-backend:latest"
@@ -17,7 +17,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Rajesh-210/crud-dd-task-mean-app.git'
+                git branch: 'main', url: 'https://github.com/diwakarnaik219/crud-dd-task-mean-app.git'
             }
         }
 
