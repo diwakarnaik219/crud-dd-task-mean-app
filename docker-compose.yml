@@ -28,10 +28,10 @@ services:
       - mean-network
 
   # -------------------------
-  # Angular Frontend (built and served by Nginx)
+  # Angular Frontend
   # -------------------------
   frontend:
-    image:karmanghat /mean-frontend:latest
+    image: karmanghat/mean-frontend:latest
     container_name: mean-frontend
     restart: always
     depends_on:
@@ -40,7 +40,7 @@ services:
       - mean-network
 
   # -------------------------
-  # Reverse Proxy (Main Entry Point on Port 80)
+  # Reverse Proxy (Nginx)
   # -------------------------
   nginx:
     image: nginx:alpine
@@ -63,7 +63,7 @@ volumes:
   mongo-data:
 
 # -------------------------
-# Shared Network for Containers
+# Shared Network
 # -------------------------
 networks:
   mean-network:
